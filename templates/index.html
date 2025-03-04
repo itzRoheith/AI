@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+            background-color: black;
+            transition: all 0.3s ease;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 600px;
+            height: 70vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #1e1e1e;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            word-wrap: break-word;
+        }
+
+        .user {
+            align-self: flex-end;
+            background-color: #0078ff;
+            color: white;
+        }
+
+        .bot {
+            align-self: flex-start;
+            background-color: #303030;
+            color: white;
+        }
+
+        .group {
+            display: flex;
+            align-items: center;
+            position: relative;
+            width: 90%;
+            max-width: 600px;
+            margin-top: 10px;
+        }
+
+        .input {
+            width: 100%;
+            height: 45px;
+            padding-left: 3rem;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            outline: none;
+            background-color: #303030;
+            color: white;
+            transition: 0.3s ease;
+        }
+
+        .input::placeholder {
+            color: #94a3b8;
+        }
+
+        .input:focus, .input:hover {
+            border-color: rgba(129, 140, 248);
+            background-color: #fff;
+            color: black;
+            box-shadow: 0 0 0 5px rgb(129 140 248 / 30%);
+        }
+
+        .icon {
+            position: absolute;
+            left: 1rem;
+            fill: none;
+            width: 1rem;
+            height: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Chat Display -->
+    <div class="chat-container" id="chatBox"></div>
+
+    <!-- Input Section -->
+    <div class="group">
+        <svg stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="icon">
+            <path d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" stroke-linejoin="round" stroke-linecap="round"></path>
+        </svg>
+        <input class="input" id="userInput" placeholder="Ask me anything">
+    </div>
+
+    <script>
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const userInput = this.value.trim();
+                if (!userInput) return;
+
+                const chatBox = document.getElementById("chatBox");
+
+                // Display user message
+                const userMessage = document.createElement("div");
+                userMessage.classList.add("message", "user");
+                userMessage.textContent = userInput;
+                chatBox.appendChild(userMessage);
+
+                // Scroll to latest message
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // Clear input field
+                this.value = '';
+
+                // Send request to backend
+                fetch('/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: userInput })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const botMessage = document.createElement("div");
+                    botMessage.classList.add("message", "bot");
+                    botMessage.textContent = data.message;
+                    chatBox.appendChild(botMessage);
+
+                    // Scroll to latest message
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                })
+                .catch(error => console.error("Error:", error));
+            }
+        });
+    </script>
+</body>
+</html>
